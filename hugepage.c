@@ -23,9 +23,10 @@ void *index_to_address(u32 index, huge_page_t *p)
 
 void *dev_alloc_units(int units)
 {
-    list_head_t *iterator = huge_page_list.next;
+    list_head_t *iterator = NULL;
     char unit_order = get_order_of(units);
 redo:
+    iterator = huge_page_list.next;
     pthread_mutex_lock(&huge_page_list_lock);
     while (iterator != &huge_page_list)
     {

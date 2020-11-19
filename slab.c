@@ -26,7 +26,7 @@ bitmap_alloc:
         while (iterator != &slab->head)
         {
             new_block = container_of(iterator, block_t, node);
-            if (!check_bitmap_full(new_block->bitmap))
+            if (!check_bitmap_allused(new_block->bitmap))
             {
                 break;
             }
@@ -50,7 +50,10 @@ bitmap_alloc:
         }
         block_t *block = slab->current_block;
         slab->current_block = new_block;
-        list_add_tail(&slab->head, &block->node);
+        if (block != NULL)
+        {
+            list_add_tail(&slab->head, &block->node);
+        }
         pthread_mutex_unlock(&slab->block_lock);
         goto bitmap_alloc;
     }
@@ -65,7 +68,7 @@ void slab_recycle_fn(slab_t *slab)
     {
         block_t *block = container_of(iterator, block_t, node);
         list_head_t *next = iterator->next;
-        if (check_bitmap_empty(block->bitmap))
+        if (check_bitmap_unused(block->bitmap))
         {
             list_del(iterator);
             destroy_block(block);

@@ -44,6 +44,9 @@ block_t *slab_create_block(struct slab_s *slab)
 
 void destroy_block(block_t *block)
 {
+    pthread_mutex_lock(&rtree_lock);
+    rtree_read(&block_rtree, (rtree_key_t)(block->start), 1);
+    pthread_mutex_unlock(&rtree_lock);
     dev_free_units(block->start, BLOCK_SIZE / UNIT_SIZE);
     free_internal(block);
     return;
@@ -52,6 +55,10 @@ void destroy_block(block_t *block)
 void *block_alloc_slab(block_t *block)
 {
     u32 offslab;
+    if (block == NULL)
+    {
+        return NULL;
+    }
     offslab = get_bit(block->bitmap);
     if (offslab == -1U)
     {

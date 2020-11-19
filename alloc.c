@@ -6,6 +6,7 @@
 #include "block.h"
 #include "alloc.h"
 #include "dev_alloc.h"
+#include "debug.h"
 
 #define RECYCLE_COUNT 100
 
@@ -14,6 +15,7 @@ slab_t *get_slab(size_t size, int cpu)
     int low_index = 0;
     int high_index = slab_num - 1;
     slab_t *slab;
+    ASSERT(size >= slab_pool[cpu][low_index].slab_size && size <= slab_pool[cpu][high_index].slab_size);
     while (low_index < high_index - 1)
     {
         int mid_index = (low_index + high_index) / 2;
@@ -53,7 +55,7 @@ void dev_free(void *p)
     block_t *block;
     void *block_start = (void *)((u64)p & BLOCK_ADDR_MASK);
     pthread_mutex_lock(&rtree_lock);
-    block = rtree_read(&block_rtree, (rtree_key_t)block_start, 1);
+    block = rtree_read(&block_rtree, (rtree_key_t)block_start, 0);
     pthread_mutex_unlock(&rtree_lock);
     if (block)
     {

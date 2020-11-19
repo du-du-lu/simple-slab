@@ -5,7 +5,7 @@
 #include "list.h"
 #include "hugepage.h"
 #define BLOCK_SIZE UNIT_SIZE
-#define BLOCK_ADDR_MASK (BLOCK_SIZE - 1)
+#define BLOCK_ADDR_MASK ~(BLOCK_SIZE - 1)
 
 typedef struct block_s block_t;
 struct block_s

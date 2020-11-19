@@ -11,6 +11,6 @@ typedef struct bitmap_s bitmap_t;
 bitmap_t *create_bitmap(u32 bits);
 u32 get_bit(bitmap_t *bitmap);
 void put_bit(bitmap_t *bitmap, u32 offset);
-bool check_bitmap_empty(bitmap_t *bitmap);
-bool check_bitmap_full(bitmap_t *bitmap);
+bool check_bitmap_allused(bitmap_t *bitmap);
+bool check_bitmap_unused(bitmap_t *bitmap);
 #endif

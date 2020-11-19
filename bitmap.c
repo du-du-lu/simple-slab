@@ -8,21 +8,30 @@
 bitmap_t *create_bitmap(u32 bits)
 {
     bitmap_t *ret;
-    u32 align_bits = ((bits + 63) / 64) * 64;
-    u32 total_size = align_bits / 8;
-    u32 valid_size = bits / 8;
+    int u64_num = (bits + 63) / 64;
+    int total_size = 64 * u64_num;
+    int ff_num = bits / 64;
+    int remain_bits = bits % 64;
+    int i = 0;
 
     ret = alloc_internal(sizeof(bitmap_t) + total_size);
     if (ret)
     {
-        memset(ret->bit_array, 0xff, valid_size);
-        memset((char *)(ret->bit_array) + valid_size, 0, total_size - valid_size);
+        while (i < ff_num)
+        {
+            ret->bit_array[i] = -1UL;
+            i++;
+        }
+        if (remain_bits != 0)
+        {
+            ret->bit_array[i] = ~((1UL << (64 - remain_bits)) - 1);
+        }
         ret->bits = bits;
     }
     return ret;
 }
 
-bool check_bitmap_empty(bitmap_t *bitmap)
+bool check_bitmap_allused(bitmap_t *bitmap)
 {
     u64 *p;
     u64 *endp;
@@ -39,20 +48,37 @@ bool check_bitmap_empty(bitmap_t *bitmap)
     return false;
 }
 
-bool check_bitmap_full(bitmap_t *bitmap)
+bool check_bitmap_unused(bitmap_t *bitmap)
 {
     u64 *p;
     u64 *endp;
     p = bitmap->bit_array;
-    endp = bitmap->bit_array + ((bitmap->bits + 63) / 64);
-    while (*p == 1)
+    endp = bitmap->bit_array + (bitmap->bits / 64);
+    int remain_bits = bitmap->bits % 64;
+    while (*p == -1UL)
     {
         p++;
         if (p > endp)
         {
-            return true;
+            if (remain_bits != 0)
+            {
+                u64 expected = ~((1UL << (64 - remain_bits)) - 1);
+                if (expected == *p)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
         }
     }
+
     return false;
 }
 
